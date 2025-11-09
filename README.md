@@ -9,7 +9,7 @@
 
 An AI-powered music generation system that transforms hand gestures into melodies in real-time. Create music intuitively using just your webcam - no instruments, no musical training required!
 
-🎥 [Demo Video](#) | 📄 [Technical Paper](TECHNICAL_RESEARCH_JOURNAL.md) | 🌐 [Live Demo](#)
+📄 [Technical Paper](TECHNICAL_RESEARCH_JOURNAL.md) | 🌐 [Live Demo](https://nissymohan.github.io/PalmRhythm-AI/)
 
 ---
 

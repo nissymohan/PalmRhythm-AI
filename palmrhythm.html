@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PalmRhythm AI - Gesture-Controlled Music</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-animation span {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 25s infinite;
+            border-radius: 50%;
+        }
+
+        .bg-animation span:nth-child(1) {
+            left: 10%;
+            animation-delay: 0s;
+            animation-duration: 20s;
+        }
+
+        .bg-animation span:nth-child(2) {
+            left: 20%;
+            animation-delay: 2s;
+            animation-duration: 15s;
+            width: 30px;
+            height: 30px;
+        }
+
+        .bg-animation span:nth-child(3) {
+            left: 30%;
+            animation-delay: 4s;
+            animation-duration: 18s;
+        }
+
+        .bg-animation span:nth-child(4) {
+            left: 40%;
+            animation-delay: 6s;
+            animation-duration: 22s;
+            width: 25px;
+            height: 25px;
+        }
+
+        .bg-animation span:nth-child(5) {
+            left: 50%;
+            animation-delay: 8s;
+            animation-duration: 16s;
+        }
+
+        .bg-animation span:nth-child(6) {
+            left: 60%;
+            animation-delay: 10s;
+            animation-duration: 20s;
+            width: 35px;
+            height: 35px;
+        }
+
+        .bg-animation span:nth-child(7) {
+            left: 70%;
+            animation-delay: 12s;
+            animation-duration: 19s;
+        }
+
+        .bg-animation span:nth-child(8) {
+            left: 80%;
+            animation-delay: 14s;
+            animation-duration: 17s;
+            width: 28px;
+            height: 28px;
+        }
+
+        .bg-animation span:nth-child(9) {
+            left: 90%;
+            animation-delay: 16s;
+            animation-duration: 21s;
+        }
+
+        .bg-animation span:nth-child(10) {
+            left: 15%;
+            animation-delay: 18s;
+            animation-duration: 23s;
+            width: 32px;
+            height: 32px;
+        }
+
+        @keyframes float {
+            0% {
+                bottom: -100px;
+                transform: translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                bottom: 110%;
+                transform: translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        #video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            opacity: 0.85;
+        }
+
+        #output-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .overlay {
+            position: fixed;
+            z-index: 10;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Glass morphism style for all panels */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.6s ease;
+        }
+
+        .glass-panel:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        #title {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px 40px;
+            border-radius: 20px;
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            text-align: center;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+        }
+
+        #style-indicator {
+            font-size: 18px;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        #stats-panel {
+            top: 120px;
+            left: 20px;
+            padding: 25px;
+            border-radius: 20px;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            min-width: 280px;
+        }
+
+        #stats-panel h3 {
+            margin: 0 0 20px 0;
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-row:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #ffd700;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+        }
+
+        #hand-guide {
+            top: 120px;
+            right: 20px;
+            padding: 25px;
+            border-radius: 20px;
+            color: white;
+            max-width: 350px;
+        }
+
+        #hand-guide h3 {
+            margin: 0 0 15px 0;
+            color: white;
+            font-size: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        #hand-guide .hand-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        #hand-guide .hand-section:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px);
+        }
+
+        #hand-guide h4 {
+            color: #ffd700;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        #hand-guide ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #hand-guide li {
+            margin: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        #hand-guide li:before {
+            content: "→";
+            position: absolute;
+            left: 5px;
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        #liked-melodies {
+            bottom: 20px;
+            left: 20px;
+            padding: 20px;
+            border-radius: 20px;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 400px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #liked-melodies h3 {
+            margin: 0 0 15px 0;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .melody-item {
+            margin: 8px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+        }
+
+        .melody-item:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateX(5px);
+        }
+
+        /* Custom scrollbar for liked melodies */
+        #liked-melodies::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #liked-melodies::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        #liked-melodies::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        #liked-melodies::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        #instructions {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px 30px;
+            border-radius: 20px;
+            color: white;
+            text-align: center;
+            max-width: 700px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        #start-button {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 30px 60px;
+            font-size: 28px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 900;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #start-button:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+        }
+
+        #start-button:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #loading {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 40px 60px;
+            border-radius: 25px;
+            color: white;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 600;
+            z-index: 100;
+        }
+
+        /* Pulse animation for feedback */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 12px 48px rgba(255, 215, 0, 0.5);
+            }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease-out;
+        }
+
+        /* Results Modal */
+        #results-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        #results-content {
+            padding: 40px;
+            border-radius: 25px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: white;
+            position: relative;
+        }
+
+        #results-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #results-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        #results-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .result-melody {
+            margin: 15px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .result-melody:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .play-melody-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .play-melody-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .close-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .results-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            z-index: 10;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .results-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Glow effect */
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            #title {
+                font-size: 20px;
+                padding: 15px 25px;
+            }
+
+            #stats-panel,
+            #hand-guide,
+            #liked-melodies {
+                min-width: auto;
+                max-width: 90%;
+            }
+
+            #instructions {
+                max-width: 90%;
+                font-size: 14px;
+            }
+
+            .stat-row,
+            .melody-item {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="bg-animation">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <!-- Video container -->
+    <div id="video-container">
+        <video id="webcam" autoplay playsinline></video>
+    </div>
+    <canvas id="output-canvas"></canvas>
+
+    <!-- Overlays -->
+    <div id="title" class="overlay glass-panel">
+        🎵 PalmRhythm AI
+        <div id="style-indicator">Initializing...</div>
+    </div>
+
+    <div id="stats-panel" class="overlay glass-panel">
+        <h3>📊 Live Stats</h3>
+        <div class="stat-row">
+            <span class="stat-label">Right Hand:</span>
+            <span class="stat-value" id="right-hand-status">Not Detected</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Fingers Extended:</span>
+            <span class="stat-value" id="right-fingers">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Hand Height:</span>
+            <span class="stat-value" id="hand-height">0%</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Left Hand:</span>
+            <span class="stat-value" id="left-hand-status">Not Detected</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Gesture:</span>
+            <span class="stat-value" id="left-gesture">None</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Patterns Generated:</span>
+            <span class="stat-value" id="pattern-count">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Liked Melodies:</span>
+            <span class="stat-value" id="liked-count">0</span>
+        </div>
+    </div>
+
+    <div id="hand-guide" class="overlay glass-panel">
+        <h3>✋ Hand Controls</h3>
+        
+        <div class="hand-section">
+            <h4>RIGHT HAND 🎵</h4>
+            <ul>
+                <li>Number of fingers = Music style</li>
+                <li>Hand height = Pitch range</li>
+                <li>Hold pose to generate pattern</li>
+            </ul>
+        </div>
+
+        <div class="hand-section">
+            <h4>LEFT HAND 👍👎</h4>
+            <ul>
+                <li>Thumbs UP 👍 = Like melody</li>
+                <li>Thumbs DOWN 👎 = Dislike</li>
+                <li>Keep fingers closed!</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="liked-melodies" class="overlay glass-panel hidden">
+        <h3>💖 Liked Melodies</h3>
+        <div id="liked-list"></div>
+    </div>
+
+    <div id="instructions" class="overlay glass-panel">
+        Use your right hand to create music and left hand to like patterns! 🎶
+    </div>
+
+    <button id="start-button" class="overlay glass-panel">Start Music</button>
+
+    <div id="loading" class="overlay glass-panel hidden">
+        <div>Loading AI Model...</div>
+        <div style="margin-top: 15px; font-size: 16px;">Please wait...</div>
+    </div>
+
+    <!-- Results Modal -->
+    <div id="results-modal" class="hidden">
+        <div id="results-content" class="glass-panel">
+            <button class="close-btn" onclick="closeResults()">✕ Close</button>
+            <h2 style="margin-bottom: 20px; font-size: 28px; font-weight: 900; letter-spacing: 2px;">🎵 Your Liked Melodies</h2>
+            <!-- Content will be inserted here -->
+        </div>
+    </div>
+
+    <button class="results-button glass-panel hidden" id="view-results" onclick="showResults()">
+        📋 View Results
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+    
+    <script>
+        // ========== SCALES AND PATTERNS ==========
+        const SCALES = {
+            calm: {
+                name: 'Calm Meditation',
+                emoji: '🧘',
+                scale: [60, 62, 64, 67, 69, 72],
+                color: '#667eea'
+            },
+            happy: {
+                name: 'Happy Major',
+                emoji: '😊',
+                scale: [60, 62, 64, 65, 67, 69, 71, 72],
+                color: '#ffd700'
+            },
+            energetic: {
+                name: 'Energetic Rock',
+                emoji: '🔥',
+                scale: [60, 62, 63, 65, 67, 68, 70, 72],
+                color: '#ff6b6b'
+            },
+            mysterious: {
+                name: 'Mysterious Minor',
+                emoji: '🌙',
+                scale: [60, 62, 63, 65, 67, 68, 70, 72],
+                color: '#9b59b6'
+            },
+            bollywood: {
+                name: 'Bollywood Raag',
+                emoji: '💃',
+                scale: [60, 61, 64, 65, 67, 68, 71, 72],
+                color: '#e74c3c'
+            }
+        };
+
+        // ========== PATTERN GENERATOR CLASS ==========
+        class PatternGenerator {
+            constructor() {
+                this.memory = [];
+                this.preferences = {};
+            }
+
+            generatePattern(gestureFeatures) {
+                const style = currentStyle;
+                const scale = SCALES[style].scale;
+                const patternLength = 8;
+                
+                const pattern = [];
+                const heightFactor = gestureFeatures.handHeight;
+                const baseOctave = Math.floor(heightFactor * 2);
+                
+                for (let i = 0; i < patternLength; i++) {
+                    const scaleIdx = Math.floor(Math.random() * scale.length);
+                    const note = scale[scaleIdx] + (baseOctave * 12);
+                    pattern.push(Math.max(48, Math.min(84, note)));
+                }
+                
+                this.memory.push({
+                    pattern,
+                    features: gestureFeatures,
+                    timestamp: Date.now()
+                });
+                
+                if (this.memory.length > 50) {
+                    this.memory.shift();
+                }
+                
+                return pattern;
+            }
+
+            likeMelody(pattern) {
+                this.preferences[JSON.stringify(pattern)] = (this.preferences[JSON.stringify(pattern)] || 0) + 1;
+            }
+        }
+
+        // ========== GLOBAL VARIABLES ==========
+        let hands;
+        let camera;
+        let canvasCtx;
+        let synth;
+        let patternGenerator;
+        let currentStyle = 'calm';
+        let currentPattern = [];
+        let patternCount = 0;
+        let lastGenerateTime = 0;
+        let likedMelodies = [];
+        
+        // Gesture debouncing
+        let lastGesture = 'None';
+        let gestureStableCount = 0;
+        const GESTURE_STABILITY_THRESHOLD = 5; // Need 5 consecutive frames
+
+        // ========== INITIALIZATION ==========
+        async function initialize() {
+            console.log('🎵 Initializing PalmRhythm AI...');
+            
+            const canvas = document.getElementById('output-canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvasCtx = canvas.getContext('2d');
+            
+            patternGenerator = new PatternGenerator();
+            
+            console.log('✅ Initialization complete');
+        }
+
+        // ========== START MUSIC ==========
+        async function startMusic() {
+            console.log('🎵 Starting music system...');
+            
+            document.getElementById('start-button').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            
+            try {
+                await Tone.start();
+                console.log('✅ Tone.js started');
+                
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: 'sine' },
+                    envelope: {
+                        attack: 0.05,
+                        decay: 0.1,
+                        sustain: 0.3,
+                        release: 0.5
+                    }
+                }).toDestination();
+                
+                synth.volume.value = -10;
+                console.log('✅ Synthesizer created');
+                
+                await initializeCamera();
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('liked-melodies').classList.remove('hidden');
+                document.getElementById('view-results').classList.remove('hidden');
+                
+                console.log('✅ System ready!');
+                
+            } catch (error) {
+                console.error('❌ Error starting music:', error);
+                alert('Error starting music system. Please check camera permissions.');
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('start-button').classList.remove('hidden');
+            }
+        }
+
+        // ========== CAMERA INITIALIZATION ==========
+        async function initializeCamera() {
+            console.log('📹 Initializing camera...');
+            
+            hands = new Hands({
+                locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                }
+            });
+            
+            hands.setOptions({
+                maxNumHands: 2,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.7,
+                minTrackingConfidence: 0.7
+            });
+            
+            hands.onResults(onResults);
+            
+            const videoElement = document.getElementById('webcam');
+            
+            camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    await hands.send({ image: videoElement });
+                },
+                width: 1280,
+                height: 720
+            });
+            
+            await camera.start();
+            console.log('✅ Camera started');
+        }
+
+        // ========== PROCESS RESULTS ==========
+        function onResults(results) {
+            const canvas = document.getElementById('output-canvas');
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Flip the canvas horizontally to match the mirrored video
+            canvasCtx.translate(canvas.width, 0);
+            canvasCtx.scale(-1, 1);
+            
+            if (results.multiHandLandmarks && results.multiHandedness) {
+                let rightHand = null;
+                let leftHand = null;
+                
+                for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+                    const landmarks = results.multiHandLandmarks[i];
+                    const handedness = results.multiHandedness[i].label;
+                    
+                    // MediaPipe labels are mirrored: "Right" = left side of screen = user's left hand
+                    // "Left" = right side of screen = user's right hand
+                    if (handedness === 'Right') {
+                        leftHand = landmarks;  // MediaPipe "Right" is user's LEFT hand
+                    } else {
+                        rightHand = landmarks; // MediaPipe "Left" is user's RIGHT hand
+                    }
+                    
+                    // Draw with the actual hand it is (swap for display)
+                    const actualHand = handedness === 'Right' ? 'Left' : 'Right';
+                    drawHand(landmarks, actualHand);
+                }
+                
+                processHands(rightHand, leftHand);
+            } else {
+                document.getElementById('right-hand-status').textContent = 'Not Detected';
+                document.getElementById('left-hand-status').textContent = 'Not Detected';
+            }
+            
+            canvasCtx.restore();
+        }
+
+        // ========== DRAW HAND ==========
+        function drawHand(landmarks, handedness) {
+            const connections = [
+                [0,1],[1,2],[2,3],[3,4],
+                [0,5],[5,6],[6,7],[7,8],
+                [0,9],[9,10],[10,11],[11,12],
+                [0,13],[13,14],[14,15],[15,16],
+                [0,17],[17,18],[18,19],[19,20],
+                [5,9],[9,13],[13,17]
+            ];
+            
+            // Different colors for right (green) and left (cyan) hands
+            if (handedness === 'Right') {
+                canvasCtx.strokeStyle = '#00ff00';  // Green for right hand (melody)
+                canvasCtx.fillStyle = '#00ff00';
+            } else {
+                canvasCtx.strokeStyle = '#00ffff';  // Cyan for left hand (gestures)
+                canvasCtx.fillStyle = '#00ffff';
+            }
+            canvasCtx.lineWidth = 3;
+            
+            for (const [start, end] of connections) {
+                const from = landmarks[start];
+                const to = landmarks[end];
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(from.x * canvasCtx.canvas.width, from.y * canvasCtx.canvas.height);
+                canvasCtx.lineTo(to.x * canvasCtx.canvas.width, to.y * canvasCtx.canvas.height);
+                canvasCtx.stroke();
+            }
+            
+            // Landmarks with brighter center
+            canvasCtx.fillStyle = '#FF0000';
+            for (const landmark of landmarks) {
+                const x = landmark.x * canvasCtx.canvas.width;
+                const y = landmark.y * canvasCtx.canvas.height;
+                canvasCtx.beginPath();
+                canvasCtx.arc(x, y, 5, 0, 2 * Math.PI);
+                canvasCtx.fill();
+            }
+        }
+
+        // ========== PROCESS HANDS ==========
+        function processHands(rightHand, leftHand) {
+            if (rightHand) {
+                document.getElementById('right-hand-status').textContent = '✅ Detected';
+                
+                const fingerCount = countFingers(rightHand);
+                const handHeight = 1 - rightHand[0].y;
+                
+                document.getElementById('right-fingers').textContent = fingerCount;
+                document.getElementById('hand-height').textContent = (handHeight * 100).toFixed(0) + '%';
+                
+                const styles = ['calm', 'happy', 'energetic', 'mysterious', 'bollywood'];
+                const newStyle = styles[Math.min(fingerCount, 4)];
+                
+                if (newStyle !== currentStyle) {
+                    currentStyle = newStyle;
+                    updateStyleDisplay();
+                }
+                
+                const now = performance.now();
+                if (now - lastGenerateTime > 2000) {
+                    generatePattern(handHeight, fingerCount);
+                    lastGenerateTime = now;
+                }
+            } else {
+                document.getElementById('right-hand-status').textContent = 'Not Detected';
+            }
+            
+            if (leftHand) {
+                document.getElementById('left-hand-status').textContent = '✅ Detected';
+                
+                const gesture = detectThumbGesture(leftHand);
+                
+                // Gesture stabilization - only update if gesture is stable for multiple frames
+                if (gesture === lastGesture) {
+                    gestureStableCount++;
+                } else {
+                    gestureStableCount = 0;
+                    lastGesture = gesture;
+                }
+                
+                // Only update display and trigger actions if gesture is stable
+                if (gestureStableCount >= GESTURE_STABILITY_THRESHOLD) {
+                    document.getElementById('left-gesture').textContent = gesture;
+                    
+                    if (gesture === 'THUMBS UP 👍' && currentPattern.length > 0) {
+                        likeCurrentMelody();
+                    }
+                } else {
+                    // Show "Detecting..." while gesture stabilizes
+                    if (gesture !== 'None' && gestureStableCount > 0) {
+                        document.getElementById('left-gesture').textContent = 'Detecting...';
+                    } else {
+                        document.getElementById('left-gesture').textContent = 'None';
+                    }
+                }
+            } else {
+                document.getElementById('left-hand-status').textContent = 'Not Detected';
+                document.getElementById('left-gesture').textContent = 'None';
+                lastGesture = 'None';
+                gestureStableCount = 0;
+            }
+        }
+
+        // ========== COUNT FINGERS ==========
+        function countFingers(landmarks) {
+            let count = 0;
+            
+            if (Math.abs(landmarks[4].x - landmarks[3].x) > 0.05) count++;
+            
+            if (landmarks[8].y < landmarks[6].y - 0.03) count++;
+            if (landmarks[12].y < landmarks[10].y - 0.03) count++;
+            if (landmarks[16].y < landmarks[14].y - 0.03) count++;
+            if (landmarks[20].y < landmarks[18].y - 0.03) count++;
+            
+            return count;
+        }
+
+        // ========== DETECT THUMB GESTURE ==========
+        function detectThumbGesture(landmarks) {
+            const thumbTip = landmarks[4];
+            const thumbIP = landmarks[3];
+            const thumbMCP = landmarks[2];
+            const indexTip = landmarks[8];
+            const indexPIP = landmarks[6];
+            const indexMCP = landmarks[5];
+            const middleTip = landmarks[12];
+            const middlePIP = landmarks[10];
+            const ringTip = landmarks[16];
+            const ringPIP = landmarks[14];
+            const pinkyTip = landmarks[20];
+            const pinkyPIP = landmarks[18];
+            const wrist = landmarks[0];
+            
+            // Count how many fingers are closed (all except thumb)
+            let closedCount = 0;
+            
+            // Index finger closed if tip is below or at PIP joint
+            if (indexTip.y >= indexPIP.y - 0.01) closedCount++;
+            
+            // Middle finger closed if tip is below or at PIP joint
+            if (middleTip.y >= middlePIP.y - 0.01) closedCount++;
+            
+            // Ring finger closed if tip is below or at PIP joint  
+            if (ringTip.y >= ringPIP.y - 0.01) closedCount++;
+            
+            // Pinky finger closed if tip is below or at PIP joint
+            if (pinkyTip.y >= pinkyPIP.y - 0.01) closedCount++;
+            
+            // Require at least 3 out of 4 fingers to be closed
+            const fingersClosed = closedCount >= 3;
+            
+            // Additional check: index should be clearly below its base
+            const indexReallyClosed = indexTip.y > indexMCP.y;
+            
+            // Thumbs up detection
+            const thumbPointingUp = thumbTip.y < thumbMCP.y - 0.1;  // Thumb clearly above its base
+            const thumbWellAboveWrist = thumbTip.y < wrist.y - 0.1;  // Well above wrist
+            const thumbWellAboveIndex = thumbTip.y < indexTip.y - 0.05;  // Above index tip
+            
+            const thumbUp = thumbPointingUp && thumbWellAboveWrist && fingersClosed && indexReallyClosed && thumbWellAboveIndex;
+            
+            // Thumbs down detection  
+            const thumbPointingDown = thumbTip.y > thumbMCP.y + 0.1;  // Thumb clearly below its base
+            const thumbWellBelowWrist = thumbTip.y > wrist.y + 0.1;  // Well below wrist
+            const thumbWellBelowIndex = thumbTip.y > indexTip.y + 0.05;  // Below index tip
+            
+            const thumbDown = thumbPointingDown && thumbWellBelowWrist && fingersClosed && indexReallyClosed && thumbWellBelowIndex;
+            
+            if (thumbUp) return 'THUMBS UP 👍';
+            if (thumbDown) return 'THUMBS DOWN 👎';
+            return 'None';
+        }
+
+        // ========== UPDATE STYLE DISPLAY ==========
+        function updateStyleDisplay() {
+            const styleInfo = SCALES[currentStyle];
+            const indicator = document.getElementById('style-indicator');
+            const title = document.getElementById('title');
+            const statsPanel = document.getElementById('stats-panel');
+            const handGuide = document.getElementById('hand-guide');
+            const likedMelodies = document.getElementById('liked-melodies');
+            const instructions = document.getElementById('instructions');
+            
+            // Update style indicator with emoji
+            indicator.textContent = `${styleInfo.emoji} ${styleInfo.name}`;
+            indicator.style.background = styleInfo.color;
+            indicator.classList.add('pulse');
+            setTimeout(() => indicator.classList.remove('pulse'), 500);
+            
+            // Create gradient based on style color
+            const color = styleInfo.color;
+            const gradient = `linear-gradient(135deg, ${color}40 0%, ${color}20 100%)`;
+            
+            // Update all panels with the style color theme
+            title.style.background = gradient;
+            title.style.borderColor = `${color}80`;
+            
+            statsPanel.style.background = gradient;
+            statsPanel.style.borderColor = `${color}80`;
+            
+            handGuide.style.background = gradient;
+            handGuide.style.borderColor = `${color}80`;
+            
+            likedMelodies.style.background = gradient;
+            likedMelodies.style.borderColor = `${color}80`;
+            
+            instructions.style.background = gradient;
+            instructions.style.borderColor = `${color}80`;
+            
+            // Add glow effect
+            const glowShadow = `0 8px 32px ${color}40, 0 0 20px ${color}30`;
+            title.style.boxShadow = glowShadow;
+            statsPanel.style.boxShadow = glowShadow;
+            handGuide.style.boxShadow = glowShadow;
+            likedMelodies.style.boxShadow = glowShadow;
+            instructions.style.boxShadow = glowShadow;
+            
+            console.log(`🎨 UI theme updated to: ${styleInfo.emoji} ${styleInfo.name} (${color})`);
+        }
+
+        // ========== GENERATE PATTERN ==========
+        function generatePattern(handHeight, fingerCount) {
+            const gestureFeatures = {
+                handHeight,
+                velocity: 0.5,
+                curvature: 0.5,
+                palmDistance: 0.5,
+                fingerStates: {}
+            };
+            
+            const pattern = patternGenerator.generatePattern(gestureFeatures);
+            currentPattern = pattern;
+            
+            playPattern(pattern);
+            
+            patternCount++;
+            document.getElementById('pattern-count').textContent = patternCount;
+            
+            console.log(`Generated pattern: [${pattern.slice(0, 5).join(', ')}...] with style: ${currentStyle}`);
+        }
+
+        // ========== PLAY PATTERN ==========
+        function playPattern(pattern) {
+            if (!synth || !pattern || pattern.length === 0) return;
+            
+            const now = Tone.now();
+            pattern.forEach((note, i) => {
+                synth.triggerAttackRelease(
+                    Tone.Frequency(note, 'midi'),
+                    '8n',
+                    now + (i * 0.2)
+                );
+            });
+        }
+
+        // ========== LIKE MELODY ==========
+        let lastLikeTime = 0;
+        function likeCurrentMelody() {
+            const now = performance.now();
+            if (now - lastLikeTime < 2000) return;
+            lastLikeTime = now;
+            
+            const melody = {
+                pattern: [...currentPattern],
+                style: currentStyle,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            likedMelodies.push(melody);
+            
+            document.getElementById('liked-count').textContent = likedMelodies.length;
+            
+            const listDiv = document.getElementById('liked-list');
+            listDiv.innerHTML = '';
+            likedMelodies.forEach((m, i) => {
+                const item = document.createElement('div');
+                item.className = 'melody-item';
+                item.innerHTML = `#${i+1} - ${SCALES[m.style].name} - ${m.timestamp}`;
+                listDiv.appendChild(item);
+            });
+            
+            const statsPanel = document.getElementById('stats-panel');
+            statsPanel.classList.add('pulse');
+            setTimeout(() => {
+                statsPanel.classList.remove('pulse');
+            }, 500);
+            
+            console.log('✅ Melody liked!', melody);
+        }
+
+        // ========== SHOW RESULTS ==========
+        window.showResults = function() {
+            const modal = document.getElementById('results-modal');
+            const content = document.getElementById('results-content');
+            
+            if (likedMelodies.length === 0) {
+                content.innerHTML = '<button class="close-btn" onclick="closeResults()">✕ Close</button><h2 style="margin-bottom: 20px; font-size: 28px; font-weight: 900; letter-spacing: 2px;">🎵 Your Liked Melodies</h2><p style="text-align: center; padding: 20px;">No melodies liked yet! Use thumbs up 👍 to save melodies.</p>';
+            } else {
+                content.innerHTML = '<button class="close-btn" onclick="closeResults()">✕ Close</button><h2 style="margin-bottom: 20px; font-size: 28px; font-weight: 900; letter-spacing: 2px;">🎵 Your Liked Melodies</h2><p style="margin-bottom: 20px;"><strong>You liked ' + likedMelodies.length + ' melodies!</strong></p>';
+                
+                likedMelodies.forEach((melody, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'result-melody';
+                    
+                    const noteNames = melody.pattern.map(midi => {
+                        const notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+                        return notes[midi % 12] + Math.floor(midi/12-1);
+                    });
+                    
+                    div.innerHTML = `
+                        <strong>Melody #${i+1}</strong><br>
+                        <span style="color: ${SCALES[melody.style].color}">Style: ${SCALES[melody.style].name}</span><br>
+                        <small>Notes: ${noteNames.join(' → ')}</small><br>
+                        <small>Time: ${melody.timestamp}</small><br>
+                        <button class="play-melody-btn" onclick="replayMelody(${i})">▶️ Play Again</button>
+                    `;
+                    content.appendChild(div);
+                });
+            }
+            
+            modal.classList.remove('hidden');
+        };
+
+        window.closeResults = function() {
+            document.getElementById('results-modal').classList.add('hidden');
+        };
+
+        window.replayMelody = function(index) {
+            const melody = likedMelodies[index];
+            playPattern(melody.pattern);
+        };
+
+        // ========== EVENT LISTENERS ==========
+        document.getElementById('start-button').addEventListener('click', startMusic);
+        window.addEventListener('load', initialize);
+
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('output-canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

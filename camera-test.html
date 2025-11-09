@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Test - PalmRhythm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* Animated background particles */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-animation span {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 25s infinite;
+            border-radius: 50%;
+        }
+
+        .bg-animation span:nth-child(1) {
+            left: 10%;
+            animation-delay: 0s;
+            animation-duration: 20s;
+        }
+
+        .bg-animation span:nth-child(2) {
+            left: 20%;
+            animation-delay: 2s;
+            animation-duration: 15s;
+            width: 30px;
+            height: 30px;
+        }
+
+        .bg-animation span:nth-child(3) {
+            left: 30%;
+            animation-delay: 4s;
+            animation-duration: 18s;
+        }
+
+        .bg-animation span:nth-child(4) {
+            left: 40%;
+            animation-delay: 6s;
+            animation-duration: 22s;
+            width: 25px;
+            height: 25px;
+        }
+
+        .bg-animation span:nth-child(5) {
+            left: 50%;
+            animation-delay: 8s;
+            animation-duration: 16s;
+        }
+
+        .bg-animation span:nth-child(6) {
+            left: 60%;
+            animation-delay: 10s;
+            animation-duration: 20s;
+            width: 35px;
+            height: 35px;
+        }
+
+        .bg-animation span:nth-child(7) {
+            left: 70%;
+            animation-delay: 12s;
+            animation-duration: 19s;
+        }
+
+        .bg-animation span:nth-child(8) {
+            left: 80%;
+            animation-delay: 14s;
+            animation-duration: 17s;
+            width: 28px;
+            height: 28px;
+        }
+
+        .bg-animation span:nth-child(9) {
+            left: 90%;
+            animation-delay: 16s;
+            animation-duration: 21s;
+        }
+
+        .bg-animation span:nth-child(10) {
+            left: 15%;
+            animation-delay: 18s;
+            animation-duration: 23s;
+            width: 32px;
+            height: 32px;
+        }
+
+        @keyframes float {
+            0% {
+                bottom: -100px;
+                transform: translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                bottom: 110%;
+                transform: translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            width: 100%;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Glass morphism card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            color: white;
+            font-size: 42px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .status {
+            padding: 20px 25px;
+            margin: 20px 0;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 16px;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .status.error {
+            background: rgba(239, 83, 80, 0.2);
+            border: 2px solid rgba(239, 83, 80, 0.5);
+            color: #ffcdd2;
+        }
+
+        .status.success {
+            background: rgba(102, 187, 106, 0.2);
+            border: 2px solid rgba(102, 187, 106, 0.5);
+            color: #c8e6c9;
+        }
+
+        .status.info {
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        button {
+            background: white;
+            color: #667eea;
+            padding: 18px 45px;
+            font-size: 20px;
+            font-weight: 900;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 25px auto;
+            display: block;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            transform: scale(1.08) translateY(-3px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        video {
+            width: 100%;
+            max-width: 100%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            margin: 25px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        video:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.02);
+        }
+
+        .instructions-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 25px 0;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        h3 {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        h4 {
+            color: #ffd700;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 20px 0 10px 0;
+        }
+
+        ol, ul {
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.8;
+            padding-left: 25px;
+        }
+
+        ol li, ul li {
+            margin: 10px 0;
+            font-size: 15px;
+        }
+
+        strong {
+            color: white;
+            font-weight: 700;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.4);
+            color: #00ff88;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .troubleshooting-section {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .troubleshooting-content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        p {
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.8;
+            margin: 10px 0;
+        }
+
+        /* Back button */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 12px 25px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            z-index: 100;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateX(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            .glass-card {
+                padding: 25px;
+            }
+
+            button {
+                font-size: 18px;
+                padding: 15px 35px;
+            }
+
+            .back-button {
+                top: 10px;
+                left: 10px;
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+
+        /* Glow animation */
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        .glass-card:hover {
+            animation: glow 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="bg-animation">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <!-- Back button -->
+    <a href="landing.html" class="back-button">← Back to Home</a>
+
+    <!-- Main container -->
+    <div class="container">
+        <div class="glass-card">
+            <h1>📹 Camera Diagnostics</h1>
+            
+            <div id="status" class="status info">
+                Click the button below to test camera access
+            </div>
+            
+            <button onclick="testCamera()">🎥 Test Camera</button>
+            
+            <div id="instructions" class="instructions-box" style="display: none;">
+                <h3>✅ When popup appears:</h3>
+                <ol>
+                    <li>Browser will ask "Allow camera access?"</li>
+                    <li>Click <strong>"Allow"</strong></li>
+                    <li>Your video should appear below</li>
+                </ol>
+            </div>
+            
+            <video id="video" autoplay playsinline style="display: none;"></video>
+            
+            <div id="troubleshooting" class="troubleshooting-section" style="display: none;">
+                <h3>🔧 Troubleshooting Guide</h3>
+                <div class="troubleshooting-content">
+                    <p><strong>Check your URL bar:</strong></p>
+                    <ul>
+                        <li>✅ <code>http://localhost:8000</code> - GOOD</li>
+                        <li>✅ <code>http://127.0.0.1:8000</code> - GOOD</li>
+                        <li>❌ <code>file:///C:/Users/...</code> - BAD (camera blocked!)</li>
+                    </ul>
+                    
+                    <h4>If you see file:///</h4>
+                    <ol>
+                        <li><strong>Open Terminal/Command Prompt</strong></li>
+                        <li><strong>Navigate to your project folder:</strong>
+                            <br><code>cd path/to/your/project</code>
+                        </li>
+                        <li><strong>Start Python server:</strong>
+                            <br><code>python -m http.server 8000</code>
+                            <br>Or: <code>python3 -m http.server 8000</code>
+                        </li>
+                        <li><strong>Open in browser:</strong>
+                            <br><code>http://localhost:8000/camera-test.html</code>
+                        </li>
+                    </ol>
+                    
+                    <h4>Other Common Issues:</h4>
+                    <ul>
+                        <li><strong>Permission already denied?</strong> 
+                            <br>→ Click padlock icon in URL bar → Reset camera permission
+                        </li>
+                        <li><strong>Using Firefox/Safari?</strong>
+                            <br>→ Try Chrome instead (best compatibility)
+                        </li>
+                        <li><strong>Camera already in use?</strong>
+                            <br>→ Close Zoom/Teams/other apps using camera
+                        </li>
+                        <li><strong>Still not working?</strong>
+                            <br>→ Try: chrome://settings/content/camera
+                            <br>→ Check if site is blocked
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testCamera() {
+            const statusDiv = document.getElementById('status');
+            const video = document.getElementById('video');
+            const instructionsDiv = document.getElementById('instructions');
+            const troubleshootingDiv = document.getElementById('troubleshooting');
+            
+            // Check if using file protocol
+            if (window.location.protocol === 'file:') {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    ❌ <strong>ERROR: Using file:// protocol</strong><br>
+                    Camera access is blocked for security.<br>
+                    <strong>SOLUTION: Must use http://localhost</strong>
+                `;
+                troubleshootingDiv.style.display = 'block';
+                return;
+            }
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = '⏳ Requesting camera access... Look for popup!';
+            instructionsDiv.style.display = 'block';
+            
+            try {
+                // Request camera
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: 1280, 
+                        height: 720 
+                    } 
+                });
+                
+                // Success!
+                video.srcObject = stream;
+                video.style.display = 'block';
+                
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    ✅ <strong>SUCCESS!</strong> Camera is working!<br>
+                    You should see yourself below. 👇
+                `;
+                instructionsDiv.style.display = 'none';
+                
+                console.log('✅ Camera stream:', stream);
+                
+            } catch (error) {
+                // Error
+                statusDiv.className = 'status error';
+                
+                if (error.name === 'NotAllowedError') {
+                    statusDiv.innerHTML = `
+                        ❌ <strong>Permission Denied</strong><br>
+                        You clicked "Block" or permissions are disabled.<br>
+                        <strong>Fix:</strong> Click padlock 🔒 in URL bar → Reset camera permission
+                    `;
+                } else if (error.name === 'NotFoundError') {
+                    statusDiv.innerHTML = `
+                        ❌ <strong>No Camera Found</strong><br>
+                        Your device doesn't have a camera or it's not detected.
+                    `;
+                } else if (error.name === 'NotReadableError') {
+                    statusDiv.innerHTML = `
+                        ❌ <strong>Camera In Use</strong><br>
+                        Another app is using your camera.<br>
+                        <strong>Close:</strong> Zoom, Teams, Skype, etc.
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        ❌ <strong>Error:</strong> ${error.name}<br>
+                        ${error.message}
+                    `;
+                }
+                
+                troubleshootingDiv.style.display = 'block';
+                console.error('❌ Camera error:', error);
+            }
+        }
+        
+        // Auto-detect issues on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const statusDiv = document.getElementById('status');
+            const troubleshootingDiv = document.getElementById('troubleshooting');
+            
+            if (window.location.protocol === 'file:') {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    ⚠️ <strong>WARNING: Using file:// protocol</strong><br>
+                    Camera will be blocked. Must use http://localhost
+                `;
+                troubleshootingDiv.style.display = 'block';
+            } else {
+                statusDiv.className = 'status info';
+                statusDiv.innerHTML = `
+                    ✅ URL is OK (${window.location.protocol})<br>
+                    Click button to test camera
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

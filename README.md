@@ -1,6 +1,7 @@
 # 🎵 PalmRhythm AI
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![JavaScript](https://img.shields.io/badge/javascript-ES6+-yellow.svg)
 [![Made with MediaPipe](https://img.shields.io/badge/Made%20with-MediaPipe-blue)](https://mediapipe.dev/)
 [![Powered by Tone.js](https://img.shields.io/badge/Powered%20by-Tone.js-orange)](https://tonejs.github.io/)
 

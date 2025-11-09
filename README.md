@@ -347,16 +347,6 @@ Students can explore:
 
 ---
 
-## 🚧 Future Enhancements
-
-### Planned Features
-- [ ] **Multi-user mode** - Collaborative music creation
-- [ ] **MIDI export** - Save compositions as MIDI files
-- [ ] **Mobile support** - iOS/Android apps
-- [ ] **Emotion detection** - Facial expression to mood mapping
-- [ ] **More instruments** - Piano, drums, strings
-- [ ] **Recording/Playback** - Save and replay sessions
-
 ### Research Directions
 - Deep learning hybrid models
 - Better long-term structure
@@ -443,22 +433,9 @@ SOFTWARE.
 - Performance RNN (Magenta, 2017)
 
 ### Special Thanks
-- DES646 course instructors
+- Proff.Amar Kumar Behera 
 - User study participants
 - Open source community
-
----
-
-## 📞 Contact
-
-**Project Maintainer**: Smile Team  
-**Institution**: IIT Kanpur  
-**Course**: DES646 - AI/ML Final Project  
-
-For questions, suggestions, or collaboration:
-- 📧 Email: [your.email@iitk.ac.in]
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/palmrhythm/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/palmrhythm/discussions)
 
 ---
 

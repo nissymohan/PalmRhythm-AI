@@ -3,7 +3,6 @@
 An intelligent, real-time music generation system controlled entirely by hand gestures. PalmRhythm combines computer vision, musical theory, and adaptive learning to create a personalized musical experience that responds to your movements.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![JavaScript](https://img.shields.io/badge/javascript-ES6+-yellow.svg)
 
 ## 🌟 Features
@@ -260,16 +259,6 @@ Notes transition based on music theory principles:
 - Modern CPU (i5/Ryzen 5 or better)
 - Well-lit environment
 
-## 📈 Future Enhancements
-
-- [ ] MIDI output support for external instruments
-- [ ] Recording and playback functionality
-- [ ] Multiple simultaneous players
-- [ ] Advanced rhythm patterns
-- [ ] Custom scale editor
-- [ ] Cloud-based preference sync
-- [ ] Mobile app version
-- [ ] VR/AR integration
 
 ## 🤝 Contributing
 
@@ -280,16 +269,6 @@ Contributions are welcome! Areas for improvement:
 - UI/UX improvements
 - Documentation and tutorials
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👨‍💻 Author
-
-**Vinayak**  
-Researcher, IIT Kanpur  
-Goswami Group
-
 Developed as part of AI/ML course submission exploring real-time human-computer interaction through gesture-based musical interfaces.
 
 ## 🙏 Acknowledgments
@@ -297,7 +276,7 @@ Developed as part of AI/ML course submission exploring real-time human-computer 
 - MediaPipe team for hand tracking technology
 - TensorFlow.js community
 - Music theory inspiration from classical and Indian classical traditions
-- IIT Kanpur AI/ML course instructors
+- IIT Kanpur | proff.Amar Kumar Behera 
 
 ## 📞 Support
 
